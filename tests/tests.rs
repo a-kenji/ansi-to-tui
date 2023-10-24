@@ -2,7 +2,7 @@
 use ansi_to_tui::IntoText;
 use tui::{
     style::{Color, Style},
-    text::{Span, Spans, Text},
+    text::{Line, Span, Text},
 };
 
 // #[test]
@@ -46,7 +46,7 @@ fn test_unicode() {
 #[test]
 fn test_ascii_rgb() {
     let bytes: Vec<u8> = b"\x1b[38;2;100;100;100mAAABBB".to_vec();
-    let output = Ok(Text::from(Spans::from(Span::styled(
+    let output = Ok(Text::from(Line::from(Span::styled(
         "AAABBB",
         Style {
             fg: Some(Color::Rgb(100, 100, 100)),
@@ -66,14 +66,14 @@ fn test_ascii_rgb() {
 fn test_ascii_newlines() {
     let bytes = "LINE_1\n\n\n\n\n\n\nLINE_8".as_bytes().to_vec();
     let output = Ok(Text::from(vec![
-        Spans::from(Span::raw("LINE_1")),
-        Spans::from(Span::raw("")),
-        Spans::from(Span::raw("")),
-        Spans::from(Span::raw("")),
-        Spans::from(Span::raw("")),
-        Spans::from(Span::raw("")),
-        Spans::from(Span::raw("")),
-        Spans::from(Span::raw("LINE_8")),
+        Line::from(Span::raw("LINE_1")),
+        Line::from(Span::raw("")),
+        Line::from(Span::raw("")),
+        Line::from(Span::raw("")),
+        Line::from(Span::raw("")),
+        Line::from(Span::raw("")),
+        Line::from(Span::raw("")),
+        Line::from(Span::raw("LINE_8")),
     ]));
 
     // println!("{:#?}", bytes.into_text());
@@ -121,7 +121,7 @@ fn test_ascii_newlines() {
 fn test_reset() {
     let string = "\x1b[33mA\x1b[0mB";
     let output = Ok(Text {
-        lines: vec![Spans(vec![
+        lines: vec![Line::from(vec![
             Span::styled(
                 "A",
                 Style {
@@ -143,7 +143,7 @@ fn test_reset() {
 #[test]
 fn test_screen_modes() {
     let bytes: Vec<u8> = b"\x1b[?25hAAABBB".to_vec();
-    let output = Ok(Text::from(Spans::from(Span::styled(
+    let output = Ok(Text::from(Line::from(Span::styled(
         "AAABBB", // or "AAABBB"
         Style::default(),
     ))));
@@ -153,27 +153,27 @@ fn test_screen_modes() {
 #[test]
 fn test_cursor_shape_and_color() {
     let bytes: Vec<u8> = b"\x1b[4 q\x1b]12;#fab1ed\x07".to_vec();
-    let output = Ok(Text::from(Spans::from(Span::styled("", Style::default()))));
+    let output = Ok(Text::from(Line::from(Span::styled("", Style::default()))));
     assert_eq!(bytes.into_text(), output);
 }
 
 #[test]
 fn test_malformed_simple() {
     let bytes: Vec<u8> = b"\x1b[".to_vec();
-    let output = Ok(Text::from(Spans::from(Span::styled("", Style::default()))));
+    let output = Ok(Text::from(Line::from(Span::styled("", Style::default()))));
     assert_eq!(bytes.into_text(), output);
 }
 
 #[test]
 fn test_malformed_complex() {
     let bytes: Vec<u8> = b"\x1b\x1b[0\x1b[m\x1b".to_vec();
-    let output = Ok(Text::from(Spans::from(Span::styled("", Style::default()))));
+    let output = Ok(Text::from(Line::from(Span::styled("", Style::default()))));
     assert_eq!(bytes.into_text(), output);
 }
 
 fn some_text(s: &'static str) -> Result<Text<'static>, ansi_to_tui::Error> {
     Ok(Text {
-        lines: vec![Spans(vec![Span {
+        lines: vec![Line::from(vec![Span {
             content: s.into(),
             style: Default::default(),
         }])],
@@ -183,9 +183,9 @@ fn some_text(s: &'static str) -> Result<Text<'static>, ansi_to_tui::Error> {
 #[test]
 fn empty_span() {
     let bytes: Vec<u8> = b"\x1b[33m\x1b[31m\x1b[32mHello\x1b[0mWorld".to_vec();
-    let output = Ok(Text::from(Spans::from(vec![
+    let output = Ok(Text::from(Line::from(vec![
         Span::styled("", Style::default().fg(Color::Yellow)), // Not sure whether to keep this or
-                                                              // remove it somehow
+        // remove it somehow
         Span::styled("Hello", Style::default().fg(Color::Green)),
         Span::styled("World", Style::default()),
     ])));
