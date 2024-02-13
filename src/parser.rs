@@ -118,6 +118,7 @@ fn spans(style: Style) -> impl Fn(&[u8]) -> IResult<&[u8], (Line<'static>, Style
                 Line {
                     spans,
                     alignment: None,
+                    style,
                 },
                 last,
             ),
